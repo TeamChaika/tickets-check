@@ -17,8 +17,8 @@ PWA приложение для проверки билетов на мероп�
 
 ```bash
 # Создайте файл .env в корне проекта со следующим содержимым:
-VITE_SUPABASE_URL=https://board.chaika.team
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzI1NDgzNjAwLAogICJleHAiOiAxODgzMjUwMDAwCn0.B7-MhcmGj3V7q1eatc17XJ0ygevbsB8E_YVj57t-1GQ
+VITE_SUPABASE_URL=URL SUPABASE
+VITE_SUPABASE_ANON_KEY=ANON KEY
 ```
 
 ### 2. Установите зависимости
