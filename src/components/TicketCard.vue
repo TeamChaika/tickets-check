@@ -2,9 +2,10 @@
   <div 
     class="ticket-card"
     :class="{ 
-      'ticket-full': isFull,
-      'ticket-partial': isPartial,
-      'ticket-empty': isEmpty
+      'ticket-full': isFull && isPaid,
+      'ticket-partial': isPartial && isPaid,
+      'ticket-empty': isEmpty && isPaid,
+      'ticket-unpaid': !isPaid
     }"
   >
     <!-- Header -->
@@ -57,8 +58,14 @@
       </div>
     </div>
     
+    <!-- Unpaid Warning -->
+    <div v-if="!isPaid" class="ticket-unpaid-message">
+      <div class="unpaid-icon">⚠️</div>
+      <span>Билет не оплачен</span>
+    </div>
+
     <!-- Actions -->
-    <div v-if="!isFull" class="ticket-actions">
+    <div v-else-if="!isFull" class="ticket-actions">
       <div class="person-selector">
         <button 
           class="btn-counter minus"
@@ -121,17 +128,28 @@ const inHall = computed(() => props.ticket.inhall || 0)
 const remaining = computed(() => Math.max(0, maxPersons.value - inHall.value))
 const progressPercent = computed(() => Math.min(100, (inHall.value / maxPersons.value) * 100))
 
+// Проверка оплаты: status = "5" или "paid"
+const isPaid = computed(() => {
+  const status = String(props.ticket.status || '').toLowerCase().trim()
+  return status === '5' || status === 'paid'
+})
+
 const isFull = computed(() => remaining.value <= 0)
 const isPartial = computed(() => inHall.value > 0 && !isFull.value)
 const isEmpty = computed(() => inHall.value === 0)
 
+// Можно ли пропустить гостей
+const canCheckIn = computed(() => isPaid.value && !isFull.value)
+
 const statusClass = computed(() => ({
   'status-full': isFull.value,
   'status-partial': isPartial.value,
-  'status-empty': isEmpty.value
+  'status-empty': isEmpty.value,
+  'status-unpaid': !isPaid.value
 }))
 
 const statusText = computed(() => {
+  if (!isPaid.value) return 'Не оплачен'
   if (isFull.value) return 'Все в зале'
   if (isPartial.value) return `${inHall.value} из ${maxPersons.value}`
   return 'Ожидает'
@@ -200,6 +218,11 @@ defineExpose({ resetCounter })
   border-color: rgba(245, 158, 11, 0.5);
 }
 
+.ticket-card.ticket-unpaid {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: linear-gradient(145deg, #450a0a 0%, #1c0a0a 100%);
+}
+
 /* Header */
 .ticket-header {
   display: flex;
@@ -241,6 +264,11 @@ defineExpose({ resetCounter })
 .status-full { 
   background: rgba(16, 185, 129, 0.2);
   color: #34d399;
+}
+
+.status-unpaid {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
 }
 
 /* Info */
@@ -481,6 +509,25 @@ defineExpose({ resetCounter })
   justify-content: center;
   color: white;
   font-size: 1.25rem;
+}
+
+/* Unpaid ticket message */
+.ticket-unpaid-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(239, 68, 68, 0.15);
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.ticket-unpaid-message .unpaid-icon {
+  font-size: 1.5rem;
 }
 </style>
 

@@ -59,6 +59,13 @@ export function useTickets() {
     }
   }
 
+  // Проверка оплаты билета
+  function isTicketPaid(ticket) {
+    if (!ticket) return false
+    const status = String(ticket.status || '').toLowerCase().trim()
+    return status === '5' || status === 'paid'
+  }
+
   // Отметить проход гостей
   async function checkIn(ticketId, personsCount = 1, userId = null) {
     loading.value = true
@@ -70,6 +77,11 @@ export function useTickets() {
       
       if (!ticket) {
         throw new Error('Билет не найден')
+      }
+      
+      // Проверяем оплату
+      if (!isTicketPaid(ticket)) {
+        throw new Error('Билет не оплачен!')
       }
       
       const currentInHall = ticket.inhall || 0
@@ -200,7 +212,8 @@ export function useTickets() {
     searchTickets,
     checkIn,
     getEvents,
-    getEventStats
+    getEventStats,
+    isTicketPaid
   }
 }
 
