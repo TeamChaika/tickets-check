@@ -1,11 +1,11 @@
 <template>
-  <div class="qr-scanner">
+  <div class="qr-scanner" :class="{ minimized: isMinimized }">
     <div v-if="!isSupported" class="error-message">
       <div class="error-icon">📵</div>
       <p>Камера не поддерживается на этом устройстве</p>
     </div>
     
-    <div v-else class="scanner-container">
+    <div v-else class="scanner-container" @click="handleContainerClick">
       <qrcode-stream
         :paused="paused"
         @detect="onDetect"
@@ -36,14 +36,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 
-const emit = defineEmits(['scanned'])
+const props = defineProps({
+  minimized: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['scanned', 'expand'])
 
 const isSupported = ref(true)
 const paused = ref(false)
 const lastError = ref(null)
+const isMinimized = ref(false)
+
+// Синхронизация с props
+watch(() => props.minimized, (val) => {
+  isMinimized.value = val
+}, { immediate: true })
 
 function onDetect(detectedCodes) {
   if (detectedCodes.length > 0) {
@@ -90,7 +103,21 @@ function pause() {
   paused.value = true
 }
 
-defineExpose({ resume, pause })
+function minimize() {
+  isMinimized.value = true
+}
+
+function expand() {
+  isMinimized.value = false
+}
+
+function handleContainerClick() {
+  if (isMinimized.value) {
+    emit('expand')
+  }
+}
+
+defineExpose({ resume, pause, minimize, expand })
 </script>
 
 <style scoped>
@@ -99,6 +126,32 @@ defineExpose({ resume, pause })
   width: 100%;
   max-width: 400px;
   margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.qr-scanner.minimized {
+  max-width: 120px;
+  margin: 0 auto 16px;
+}
+
+.qr-scanner.minimized .scanner-container {
+  aspect-ratio: 1;
+  cursor: pointer;
+}
+
+.qr-scanner.minimized .scanner-overlay {
+  display: none;
+}
+
+.qr-scanner.minimized .scanner-container::after {
+  content: '📷 Нажмите для сканирования';
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: #9ca3af;
 }
 
 .scanner-container {
@@ -107,6 +160,7 @@ defineExpose({ resume, pause })
   overflow: hidden;
   background: #000;
   aspect-ratio: 1;
+  transition: all 0.3s ease;
 }
 
 .scanner-view {

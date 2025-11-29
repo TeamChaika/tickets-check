@@ -51,7 +51,12 @@
 
     <!-- Scanner Tab -->
     <div v-show="activeTab === 'scan'" class="tab-content">
-      <QRScanner ref="scannerRef" @scanned="handleScan" />
+      <QRScanner 
+        ref="scannerRef" 
+        :minimized="!!scannedTicket"
+        @scanned="handleScan"
+        @expand="expandScanner"
+      />
       
       <Transition name="slide-up">
         <div v-if="scannedTicket" class="scanned-result">
@@ -304,6 +309,11 @@ async function handleScan(qrCode) {
 }
 
 function clearScanned() {
+  scannedTicket.value = null
+  scannerRef.value?.resume()
+}
+
+function expandScanner() {
   scannedTicket.value = null
   scannerRef.value?.resume()
 }
