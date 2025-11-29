@@ -7,8 +7,12 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png'],
+      devOptions: {
+        enabled: true
+      },
+      includeAssets: ['favicon.svg'],
       manifest: {
+        id: '/',
         name: 'Проверка билетов',
         short_name: 'Билеты',
         description: 'Сервис проверки билетов на мероприятия',
@@ -16,16 +20,14 @@ export default defineConfig({
         background_color: '#0f0f23',
         display: 'standalone',
         orientation: 'portrait',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
-            src: 'icon-192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'icon-512.png',
-            sizes: '512x512',
-            type: 'image/png'
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
           }
         ]
       },
