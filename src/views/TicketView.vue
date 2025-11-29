@@ -167,14 +167,17 @@ async function generateQRCode(text) {
 
   try {
     await QRCode.toCanvas(qrCanvas.value, text, {
-      width: 200,
-      margin: 2,
+      width: 250,
+      margin: 3,
       color: {
         dark: '#000000',
-        light: '#ffffff'
+        light: '#FFFFFF'
       },
-      errorCorrectionLevel: 'M'
+      errorCorrectionLevel: 'H'
     })
+    
+    // Убедимся что canvas виден
+    qrCanvas.value.style.display = 'block'
   } catch (err) {
     console.error('QR generation error:', err)
   }
@@ -331,15 +334,17 @@ onMounted(() => {
 .qr-code {
   display: inline-block;
   padding: 16px;
-  background: white;
+  background: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e5e7eb;
 }
 
 .qr-code canvas {
-  display: block;
-  width: 200px;
-  height: 200px;
+  display: block !important;
+  width: 220px !important;
+  height: 220px !important;
+  image-rendering: pixelated;
 }
 
 .qr-hint {
