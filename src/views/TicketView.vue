@@ -32,7 +32,8 @@
         <!-- QR Code -->
         <div class="qr-section">
           <div class="qr-code">
-            <canvas ref="qrCanvas"></canvas>
+            <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR Code" class="qr-image" />
+            <div v-else class="qr-loading">Генерация QR...</div>
           </div>
           <p class="qr-hint">Покажите QR-код на входе</p>
         </div>
@@ -92,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '../composables/useSupabase'
 import QRCode from 'qrcode'
@@ -102,7 +103,7 @@ const route = useRoute()
 const ticket = ref(null)
 const loading = ref(true)
 const error = ref(null)
-const qrCanvas = ref(null)
+const qrDataUrl = ref(null)
 
 const ticketId = computed(() => route.params.uuid || '')
 
@@ -152,7 +153,6 @@ async function loadTicket() {
     ticket.value = data
     
     // Generate QR code after ticket loads
-    await nextTick()
     generateQRCode(uuid)
   } catch (e) {
     console.error('Load ticket error:', e)
@@ -163,23 +163,19 @@ async function loadTicket() {
 }
 
 async function generateQRCode(text) {
-  if (!qrCanvas.value) return
-
   try {
-    await QRCode.toCanvas(qrCanvas.value, text, {
-      width: 250,
-      margin: 3,
+    qrDataUrl.value = await QRCode.toDataURL(text, {
+      width: 300,
+      margin: 2,
       color: {
         dark: '#000000',
         light: '#FFFFFF'
       },
       errorCorrectionLevel: 'H'
     })
-    
-    // Убедимся что canvas виден
-    qrCanvas.value.style.display = 'block'
   } catch (err) {
     console.error('QR generation error:', err)
+    qrDataUrl.value = null
   }
 }
 
@@ -333,18 +329,27 @@ onMounted(() => {
 
 .qr-code {
   display: inline-block;
-  padding: 16px;
+  padding: 12px;
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 2px solid #e5e7eb;
 }
 
-.qr-code canvas {
-  display: block !important;
-  width: 220px !important;
-  height: 220px !important;
-  image-rendering: pixelated;
+.qr-image {
+  display: block;
+  width: 200px;
+  height: 200px;
+}
+
+.qr-loading {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
 }
 
 .qr-hint {
