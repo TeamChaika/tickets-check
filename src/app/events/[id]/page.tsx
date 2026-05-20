@@ -2,12 +2,11 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { TicketStatsBar } from '@/components/tickets/TicketStats'
-import { TicketTable } from '@/components/tickets/TicketTable'
+import { RealtimeTickets } from '@/components/tickets/RealtimeTickets'
 import { TicketSearch } from '@/components/tickets/TicketSearch'
 import { ExportButton } from '@/components/tickets/ExportButton'
 import { ScanButton } from '@/components/tickets/ScanButton'
-import type { Ticket, Event, TicketStats } from '@/types'
+import type { Ticket, Event } from '@/types'
 
 export const revalidate = 0
 
@@ -113,13 +112,6 @@ export default async function EventPage({ params, searchParams }: Props) {
           </h1>
         </header>
 
-        {/* Stats — только без активного поиска */}
-        {!q && (
-          <section style={{ marginBottom: '40px' }}>
-            <TicketStatsBar stats={stats} />
-          </section>
-        )}
-
         {/* Search + Export */}
         <section>
           <div className="toolbar">
@@ -140,7 +132,11 @@ export default async function EventPage({ params, searchParams }: Props) {
               <ExportButton tickets={tickets} eventName={event.name} eventId={event.id} />
             </div>
           </div>
-          <TicketTable tickets={tickets} />
+          <RealtimeTickets
+            initialTickets={tickets}
+            eventId={String(event.id)}
+            showStats={!q}
+          />
         </section>
 
       </main>

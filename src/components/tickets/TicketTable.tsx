@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import type { Ticket } from '@/types'
 import { setCheckIn } from '@/app/actions'
 
@@ -43,6 +43,11 @@ function CheckInCounter({ ticket }: { ticket: Ticket }) {
   const max = ticket.len ?? 1
   const [saved, setSaved]   = useState(ticket.inhall ?? 0)
   const [picking, setPicking] = useState(false)
+
+  // sync when another device updates inhall via realtime
+  useEffect(() => {
+    if (!picking) setSaved(ticket.inhall ?? 0)
+  }, [ticket.inhall, picking])
   const [adding, setAdding]   = useState(1)
   const [pending, startTransition] = useTransition()
 
