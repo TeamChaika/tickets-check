@@ -41,53 +41,108 @@ const td: React.CSSProperties = {
 
 function CheckInCounter({ ticket }: { ticket: Ticket }) {
   const max = ticket.len ?? 1
-  const [count, setCount] = useState(ticket.inhall ?? 0)
+  const [saved, setSaved]   = useState(ticket.inhall ?? 0)
+  const [picking, setPicking] = useState(false)
+  const [adding, setAdding]   = useState(1)
   const [pending, startTransition] = useTransition()
 
-  function change(next: number) {
-    setCount(next)
+  const remaining = max - saved
+  const isFull = saved >= max
+  const isPartial = saved > 0 && saved < max
+
+  function openPicker() {
+    setAdding(Math.min(remaining, 1))
+    setPicking(true)
+  }
+
+  function confirm() {
+    const next = Math.min(max, saved + adding)
+    setSaved(next)
+    setPicking(false)
     startTransition(() => setCheckIn(ticket.id, next, ticket.id_event))
   }
 
-  const isFull    = count >= max
-  const isPartial = count > 0 && count < max
-  const accent = isFull ? '#4ade80' : isPartial ? 'var(--gold)' : 'var(--text-dim)'
-  const bg     = isFull ? 'rgba(74,222,128,0.08)' : isPartial ? 'var(--gold-dim)' : 'var(--surface-2)'
-  const border = isFull ? 'rgba(74,222,128,0.2)'  : isPartial ? 'var(--border-gold)' : 'var(--border)'
-
-  const btnBase: React.CSSProperties = {
-    width: '26px', height: '28px', background: 'transparent', border: 'none',
-    cursor: 'pointer', fontSize: '16px', fontWeight: 600, lineHeight: 1,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    color: accent,
+  // Полностью вошли — только статус
+  if (isFull) {
+    return (
+      <span style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80', userSelect: 'none', whiteSpace: 'nowrap' }}>
+        ✓ {max}/{max}
+      </span>
+    )
   }
 
-  return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center',
-      border: `1px solid ${border}`, borderRadius: '6px',
-      background: bg, overflow: 'hidden',
-      opacity: pending ? 0.65 : 1, transition: 'all 0.15s',
-    }}>
-      <button
-        onClick={() => change(Math.max(0, count - 1))}
-        disabled={pending || count === 0}
-        style={{ ...btnBase, opacity: count === 0 ? 0.25 : 1, cursor: count === 0 ? 'default' : 'pointer' }}
-      >−</button>
-      <span style={{
-        minWidth: max > 1 ? '34px' : '22px', textAlign: 'center',
-        fontSize: '11px', fontWeight: 700, color: accent,
-        userSelect: 'none', letterSpacing: '0.02em',
+  // Выбор количества
+  if (picking) {
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '6px',
+        background: 'var(--surface-2)', border: '1px solid var(--border-gold)',
+        borderRadius: '8px', padding: '4px 6px',
+        opacity: pending ? 0.65 : 1,
       }}>
-        {max > 1 ? `${count}/${max}` : (count > 0 ? '✓' : '·')}
-      </span>
+        <button
+          onClick={() => setAdding(Math.max(1, adding - 1))}
+          disabled={adding <= 1}
+          style={pickerBtn(adding <= 1)}
+        >−</button>
+        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--gold)', minWidth: '48px', textAlign: 'center', userSelect: 'none' }}>
+          {saved + adding}/{max}
+        </span>
+        <button
+          onClick={() => setAdding(Math.min(remaining, adding + 1))}
+          disabled={adding >= remaining}
+          style={pickerBtn(adding >= remaining)}
+        >+</button>
+        <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 2px' }} />
+        <button onClick={confirm} style={{
+          padding: '4px 10px', borderRadius: '5px', border: 'none',
+          background: 'var(--gold)', color: '#0a0a0a',
+          fontSize: '12px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+        }}>Войдут</button>
+        <button onClick={() => setPicking(false)} style={{
+          width: '22px', height: '22px', borderRadius: '4px', border: '1px solid var(--border)',
+          background: 'transparent', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '14px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>✕</button>
+      </div>
+    )
+  }
+
+  // Idle
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+      {isPartial && (
+        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold)', userSelect: 'none', whiteSpace: 'nowrap' }}>
+          {saved}/{max}
+        </span>
+      )}
       <button
-        onClick={() => change(Math.min(max, count + 1))}
-        disabled={pending || count >= max}
-        style={{ ...btnBase, opacity: count >= max ? 0.25 : 1, cursor: count >= max ? 'default' : 'pointer' }}
-      >+</button>
+        onClick={openPicker}
+        style={{
+          padding: '5px 12px', borderRadius: '6px', border: '1px solid var(--border)',
+          background: 'var(--surface-2)', color: 'var(--text-sub)',
+          fontSize: '12px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+          transition: 'all 0.15s',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-gold)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gold)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-sub)' }}
+      >
+        {saved === 0 ? 'Вход' : `+ ещё`}
+      </button>
     </div>
   )
+}
+
+function pickerBtn(disabled: boolean): React.CSSProperties {
+  return {
+    width: '26px', height: '26px', borderRadius: '5px',
+    border: `1px solid ${disabled ? 'var(--border)' : 'var(--border-gold)'}`,
+    background: 'transparent',
+    color: disabled ? 'var(--text-dim)' : 'var(--gold)',
+    fontSize: '16px', fontWeight: 600, cursor: disabled ? 'default' : 'pointer',
+    opacity: disabled ? 0.3 : 1,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  }
 }
 
 function TicketRow({ ticket, idx }: { ticket: Ticket; idx: number }) {
