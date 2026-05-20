@@ -32,23 +32,18 @@ export function RealtimeTickets({ initialTickets, eventId, showStats }: Props) {
       .channel(`tickets-event-${eventId}`)
       .on(
         'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'tickets',
-          filter: `id_event=eq.${eventId}`,
-        },
+        { event: 'UPDATE', schema: 'public', table: 'tickets' },
         (payload) => {
+          const updated = payload.new as Ticket
+          if (String(updated.id_event) !== String(eventId)) return
           setTickets(prev =>
-            prev.map(t =>
-              t.id === (payload.new as Ticket).id
-                ? { ...t, inhall: (payload.new as Ticket).inhall }
-                : t
-            )
+            prev.map(t => t.id === updated.id ? { ...t, inhall: updated.inhall } : t)
           )
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[Realtime]', status)
+      })
 
     return () => { supabase.removeChannel(channel) }
   }, [eventId])
