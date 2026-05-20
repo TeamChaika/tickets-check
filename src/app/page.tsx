@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { EventCard } from '@/components/events/EventCard'
+import { SignOutButton } from '@/components/SignOutButton'
 import type { Event } from '@/types'
 
 export const revalidate = 60
@@ -24,24 +25,29 @@ export default async function HomePage() {
 
         {/* Header */}
         <header style={{ marginBottom: '48px' }}>
-          <p style={{
-            fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em',
-            textTransform: 'uppercase', color: 'var(--gold)', margin: '0 0 12px',
-          }}>
-            Управление билетами
-          </p>
-          <h1 style={{
-            fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 700,
-            letterSpacing: '-0.02em', color: 'var(--text)',
-            lineHeight: 1.1, margin: 0,
-          }}>
-            Все события
-          </h1>
-          {events.length > 0 && (
-            <p style={{ fontSize: '13px', color: 'var(--text-sub)', margin: '10px 0 0' }}>
-              {events.length} {events.length === 1 ? 'событие' : events.length < 5 ? 'события' : 'событий'}
-            </p>
-          )}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+            <div>
+              <p style={{
+                fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em',
+                textTransform: 'uppercase', color: 'var(--gold)', margin: '0 0 12px',
+              }}>
+                Управление билетами
+              </p>
+              <h1 style={{
+                fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 700,
+                letterSpacing: '-0.02em', color: 'var(--text)',
+                lineHeight: 1.1, margin: 0,
+              }}>
+                Все события
+              </h1>
+              {events.length > 0 && (
+                <p style={{ fontSize: '13px', color: 'var(--text-sub)', margin: '10px 0 0' }}>
+                  {events.length} {events.length === 1 ? 'событие' : events.length < 5 ? 'события' : 'событий'}
+                </p>
+              )}
+            </div>
+            <SignOutButton />
+          </div>
         </header>
 
         {/* Events grid */}
