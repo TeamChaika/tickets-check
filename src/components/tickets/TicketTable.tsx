@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import type { Ticket } from '@/types'
-import { toggleCheckIn } from '@/app/actions'
+import { setCheckIn } from '@/app/actions'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('ru-RU', {
@@ -39,33 +39,54 @@ const td: React.CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
-function CheckInBtn({ ticket }: { ticket: Ticket }) {
-  const [optimistic, setOptimistic] = useState(ticket.inhall)
+function CheckInCounter({ ticket }: { ticket: Ticket }) {
+  const max = ticket.len ?? 1
+  const [count, setCount] = useState(ticket.inhall ?? 0)
   const [pending, startTransition] = useTransition()
-  const checked = optimistic === 1
+
+  function change(next: number) {
+    setCount(next)
+    startTransition(() => setCheckIn(ticket.id, next, ticket.id_event))
+  }
+
+  const isFull    = count >= max
+  const isPartial = count > 0 && count < max
+  const accent = isFull ? '#4ade80' : isPartial ? 'var(--gold)' : 'var(--text-dim)'
+  const bg     = isFull ? 'rgba(74,222,128,0.08)' : isPartial ? 'var(--gold-dim)' : 'var(--surface-2)'
+  const border = isFull ? 'rgba(74,222,128,0.2)'  : isPartial ? 'var(--border-gold)' : 'var(--border)'
+
+  const btnBase: React.CSSProperties = {
+    width: '26px', height: '28px', background: 'transparent', border: 'none',
+    cursor: 'pointer', fontSize: '16px', fontWeight: 600, lineHeight: 1,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: accent,
+  }
 
   return (
-    <button
-      onClick={() => {
-        setOptimistic(checked ? null : 1)
-        startTransition(() => toggleCheckIn(ticket.id, optimistic, ticket.id_event))
-      }}
-      disabled={pending}
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: '5px',
-        padding: '5px 10px', borderRadius: '6px', border: '1px solid',
-        fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em',
-        textTransform: 'uppercase', cursor: pending ? 'wait' : 'pointer',
-        transition: 'all 0.15s',
-        background: checked ? 'rgba(74,222,128,0.1)' : 'var(--surface-2)',
-        borderColor: checked ? 'rgba(74,222,128,0.25)' : 'var(--border)',
-        color: checked ? '#4ade80' : 'var(--text-dim)',
-        opacity: pending ? 0.6 : 1,
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {checked ? '✓ Вошёл' : 'Вход'}
-    </button>
+    <div style={{
+      display: 'inline-flex', alignItems: 'center',
+      border: `1px solid ${border}`, borderRadius: '6px',
+      background: bg, overflow: 'hidden',
+      opacity: pending ? 0.65 : 1, transition: 'all 0.15s',
+    }}>
+      <button
+        onClick={() => change(Math.max(0, count - 1))}
+        disabled={pending || count === 0}
+        style={{ ...btnBase, opacity: count === 0 ? 0.25 : 1, cursor: count === 0 ? 'default' : 'pointer' }}
+      >−</button>
+      <span style={{
+        minWidth: max > 1 ? '34px' : '22px', textAlign: 'center',
+        fontSize: '11px', fontWeight: 700, color: accent,
+        userSelect: 'none', letterSpacing: '0.02em',
+      }}>
+        {max > 1 ? `${count}/${max}` : (count > 0 ? '✓' : '·')}
+      </span>
+      <button
+        onClick={() => change(Math.min(max, count + 1))}
+        disabled={pending || count >= max}
+        style={{ ...btnBase, opacity: count >= max ? 0.25 : 1, cursor: count >= max ? 'default' : 'pointer' }}
+      >+</button>
+    </div>
   )
 }
 
@@ -103,7 +124,7 @@ function TicketRow({ ticket, idx }: { ticket: Ticket; idx: number }) {
         {formatDate(ticket.created_at)}
       </td>
       <td style={{ ...td, paddingRight: '16px' }}>
-        <CheckInBtn ticket={ticket} />
+        <CheckInCounter ticket={ticket} />
       </td>
     </tr>
   )
@@ -158,7 +179,7 @@ function MobileCard({ ticket, idx }: { ticket: Ticket; idx: number }) {
         <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '11px', color: 'var(--text-dim)' }}>
           {formatDate(ticket.created_at)}
         </span>
-        <CheckInBtn ticket={ticket} />
+        <CheckInCounter ticket={ticket} />
       </div>
     </div>
   )

@@ -77,8 +77,8 @@ export function TicketStatsBar({ stats }: { stats: TicketStats }) {
     maximumFractionDigits: 0,
   }).format(stats.total_revenue)
 
-  const checkinPct = stats.total_buyers > 0
-    ? Math.round((stats.total_checkins / stats.total_buyers) * 100)
+  const checkinPct = stats.total_tickets > 0
+    ? Math.round((stats.total_checkins / stats.total_tickets) * 100)
     : 0
 
   return (
@@ -89,7 +89,7 @@ export function TicketStatsBar({ stats }: { stats: TicketStats }) {
       <StatCard
         label="Вошли в зал"
         value={String(stats.total_checkins)}
-        sub={`${checkinPct}% от покупателей`}
+        sub={`${checkinPct}% из ${stats.total_tickets} гостей`}
         green
       />
     </div>

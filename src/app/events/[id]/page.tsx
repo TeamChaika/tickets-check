@@ -45,7 +45,7 @@ async function getData(id: string, query: string) {
     total_buyers: rows.length,
     total_tickets: rows.reduce((s, t) => s + (t.len ?? 0), 0),
     total_revenue: rows.reduce((s, t) => s + (t.price ?? 0), 0),
-    total_checkins: rows.filter((t) => t.inhall === 1).length,
+    total_checkins: rows.reduce((s, t) => s + (t.inhall ?? 0), 0),
   }
 
   return { event: event as Event, tickets: rows, stats }

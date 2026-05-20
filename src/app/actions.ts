@@ -4,10 +4,9 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { Ticket } from '@/types'
 
-export async function toggleCheckIn(ticketId: string, currentInhall: number | null, eventId: string) {
+export async function setCheckIn(ticketId: string, count: number, eventId: string) {
   const supabase = await createClient()
-  const next = currentInhall === 1 ? null : 1
-  await supabase.from('tickets').update({ inhall: next }).eq('id', ticketId)
+  await supabase.from('tickets').update({ inhall: count > 0 ? count : null }).eq('id', ticketId)
   revalidatePath(`/events/${eventId}`)
 }
 
@@ -24,9 +23,10 @@ export async function checkInByQr(uuid: string, eventId: string): Promise<ScanRe
 
   const ticket = data as Ticket
   if (String(ticket.id_event) !== String(eventId)) return { status: 'wrong_event' }
-  if (ticket.inhall === 1) return { status: 'already', ticket }
+  const capacity = ticket.len ?? 1
+  if ((ticket.inhall ?? 0) >= capacity) return { status: 'already', ticket }
 
-  await supabase.from('tickets').update({ inhall: 1 }).eq('id', uuid)
+  await supabase.from('tickets').update({ inhall: capacity }).eq('id', uuid)
   revalidatePath(`/events/${eventId}`)
-  return { status: 'ok', ticket: { ...ticket, inhall: 1 } }
+  return { status: 'ok', ticket: { ...ticket, inhall: capacity } }
 }
