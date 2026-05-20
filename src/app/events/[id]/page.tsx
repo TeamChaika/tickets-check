@@ -6,7 +6,7 @@ import { RealtimeTickets } from '@/components/tickets/RealtimeTickets'
 import { TicketSearch } from '@/components/tickets/TicketSearch'
 import { ExportButton } from '@/components/tickets/ExportButton'
 import { ScanButton } from '@/components/tickets/ScanButton'
-import type { Ticket, Event } from '@/types'
+import type { Ticket, Event, TicketStats } from '@/types'
 
 export const revalidate = 0
 
