@@ -49,10 +49,10 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 /* ── Responsive layout helpers ───────────────────────── */
 
-/* Stats: 2 columns on mobile, 3 on desktop */
+/* Stats: 2 columns on mobile, 4 on desktop */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
@@ -73,12 +73,9 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 @media (max-width: 639px) {
   .export-btn { width: 100% !important; }
-  /* Stats → 2 col grid, выручка на всю ширину */
+  /* Stats → 2 col grid */
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .stats-grid > *:last-child {
-    grid-column: 1 / -1;
   }
 
   /* Table → cards */

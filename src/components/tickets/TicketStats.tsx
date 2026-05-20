@@ -5,27 +5,33 @@ interface StatCardProps {
   value: string
   sub?: string
   accent?: boolean
+  green?: boolean
 }
 
-function StatCard({ label, value, sub, accent }: StatCardProps) {
+function StatCard({ label, value, sub, accent, green }: StatCardProps) {
+  const lineColor = accent
+    ? 'linear-gradient(90deg, var(--gold), transparent)'
+    : green
+      ? 'linear-gradient(90deg, #4ade80, transparent)'
+      : 'linear-gradient(90deg, rgba(255,255,255,0.1), transparent)'
+
+  const valueColor = accent ? 'var(--gold)' : green ? '#4ade80' : 'var(--text)'
+
   return (
     <div style={{
       background: 'var(--surface)',
-      border: '1px solid var(--border)',
+      border: `1px solid ${green ? 'rgba(74,222,128,0.15)' : 'var(--border)'}`,
       borderRadius: 'var(--radius)',
       padding: '28px 28px 24px',
       position: 'relative',
       overflow: 'hidden',
       transition: 'border-color 0.2s',
     }}>
-      {/* top accent line */}
       <div style={{
         position: 'absolute',
         top: 0, left: 0, right: 0,
         height: '1px',
-        background: accent
-          ? 'linear-gradient(90deg, var(--gold), transparent)'
-          : 'linear-gradient(90deg, rgba(255,255,255,0.1), transparent)',
+        background: lineColor,
       }} />
 
       <p style={{
@@ -43,7 +49,7 @@ function StatCard({ label, value, sub, accent }: StatCardProps) {
         fontSize: 'clamp(28px, 3vw, 36px)',
         fontWeight: 700,
         letterSpacing: '-0.02em',
-        color: accent ? 'var(--gold)' : 'var(--text)',
+        color: valueColor,
         margin: 0,
         lineHeight: 1,
         fontVariantNumeric: 'tabular-nums',
@@ -71,11 +77,21 @@ export function TicketStatsBar({ stats }: { stats: TicketStats }) {
     maximumFractionDigits: 0,
   }).format(stats.total_revenue)
 
+  const checkinPct = stats.total_buyers > 0
+    ? Math.round((stats.total_checkins / stats.total_buyers) * 100)
+    : 0
+
   return (
     <div className="stats-grid">
       <StatCard label="Покупателей" value={String(stats.total_buyers)} />
       <StatCard label="Билетов продано" value={String(stats.total_tickets)} />
       <StatCard label="Выручка" value={revenue} accent />
+      <StatCard
+        label="Вошли в зал"
+        value={String(stats.total_checkins)}
+        sub={`${checkinPct}% от покупателей`}
+        green
+      />
     </div>
   )
 }

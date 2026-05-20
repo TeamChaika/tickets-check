@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import type { Ticket } from '@/types'
+import { toggleCheckIn } from '@/app/actions'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('ru-RU', {
@@ -16,7 +17,7 @@ function formatMoney(amount: number) {
   }).format(amount)
 }
 
-const HEADERS = ['#', 'Имя', 'Фамилия', 'Телефон', 'Билетов', 'Сумма', 'Дата покупки']
+const HEADERS = ['#', 'Имя', 'Фамилия', 'Телефон', 'Билетов', 'Сумма', 'Дата покупки', '']
 
 const th: React.CSSProperties = {
   padding: '14px 18px',
@@ -36,6 +37,36 @@ const td: React.CSSProperties = {
   color: 'var(--text)',
   borderBottom: '1px solid var(--border)',
   whiteSpace: 'nowrap',
+}
+
+function CheckInBtn({ ticket }: { ticket: Ticket }) {
+  const [optimistic, setOptimistic] = useState(ticket.inhall)
+  const [pending, startTransition] = useTransition()
+  const checked = optimistic === 1
+
+  return (
+    <button
+      onClick={() => {
+        setOptimistic(checked ? null : 1)
+        startTransition(() => toggleCheckIn(ticket.id, optimistic, ticket.id_event))
+      }}
+      disabled={pending}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '5px',
+        padding: '5px 10px', borderRadius: '6px', border: '1px solid',
+        fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em',
+        textTransform: 'uppercase', cursor: pending ? 'wait' : 'pointer',
+        transition: 'all 0.15s',
+        background: checked ? 'rgba(74,222,128,0.1)' : 'var(--surface-2)',
+        borderColor: checked ? 'rgba(74,222,128,0.25)' : 'var(--border)',
+        color: checked ? '#4ade80' : 'var(--text-dim)',
+        opacity: pending ? 0.6 : 1,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {checked ? '✓ Вошёл' : 'Вход'}
+    </button>
+  )
 }
 
 function TicketRow({ ticket, idx }: { ticket: Ticket; idx: number }) {
@@ -70,6 +101,9 @@ function TicketRow({ ticket, idx }: { ticket: Ticket; idx: number }) {
       </td>
       <td style={{ ...td, color: 'var(--text-sub)', fontFamily: 'var(--font-geist-mono), monospace', fontSize: '12px' }}>
         {formatDate(ticket.created_at)}
+      </td>
+      <td style={{ ...td, paddingRight: '16px' }}>
+        <CheckInBtn ticket={ticket} />
       </td>
     </tr>
   )
@@ -119,11 +153,12 @@ function MobileCard({ ticket, idx }: { ticket: Ticket; idx: number }) {
         </span>
       </div>
 
-      {/* Row 3: date */}
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '8px' }}>
+      {/* Row 3: date + check-in */}
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
         <span style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '11px', color: 'var(--text-dim)' }}>
           {formatDate(ticket.created_at)}
         </span>
+        <CheckInBtn ticket={ticket} />
       </div>
     </div>
   )

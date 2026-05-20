@@ -6,6 +6,7 @@ import { TicketStatsBar } from '@/components/tickets/TicketStats'
 import { TicketTable } from '@/components/tickets/TicketTable'
 import { TicketSearch } from '@/components/tickets/TicketSearch'
 import { ExportButton } from '@/components/tickets/ExportButton'
+import { ScanButton } from '@/components/tickets/ScanButton'
 import type { Ticket, Event, TicketStats } from '@/types'
 
 export const revalidate = 0
@@ -44,6 +45,7 @@ async function getData(id: string, query: string) {
     total_buyers: rows.length,
     total_tickets: rows.reduce((s, t) => s + (t.len ?? 0), 0),
     total_revenue: rows.reduce((s, t) => s + (t.price ?? 0), 0),
+    total_checkins: rows.filter((t) => t.inhall === 1).length,
   }
 
   return { event: event as Event, tickets: rows, stats }
@@ -133,7 +135,10 @@ export default async function EventPage({ params, searchParams }: Props) {
                 </span>
               )}
             </div>
-            <ExportButton tickets={tickets} eventName={event.name} eventId={event.id} />
+            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+              <ScanButton eventId={String(event.id)} />
+              <ExportButton tickets={tickets} eventName={event.name} eventId={event.id} />
+            </div>
           </div>
           <TicketTable tickets={tickets} />
         </section>

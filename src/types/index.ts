@@ -49,4 +49,5 @@ export interface TicketStats {
   total_buyers: number
   total_tickets: number
   total_revenue: number
+  total_checkins: number
 }
