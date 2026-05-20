@@ -6,6 +6,7 @@ import { RealtimeTickets } from '@/components/tickets/RealtimeTickets'
 import { TicketSearch } from '@/components/tickets/TicketSearch'
 import { ExportButton } from '@/components/tickets/ExportButton'
 import { ScanButton } from '@/components/tickets/ScanButton'
+import { AddTicketButton } from '@/components/tickets/AddTicketButton'
 import type { Ticket, Event, TicketStats } from '@/types'
 
 export const revalidate = 0
@@ -128,6 +129,7 @@ export default async function EventPage({ params, searchParams }: Props) {
               )}
             </div>
             <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+              <AddTicketButton eventId={String(event.id)} />
               <ScanButton eventId={String(event.id)} />
               <ExportButton tickets={tickets} eventName={event.name} eventId={event.id} />
             </div>

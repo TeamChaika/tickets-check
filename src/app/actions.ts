@@ -10,6 +10,32 @@ export async function setCheckIn(ticketId: string, count: number, eventId: strin
   revalidatePath(`/events/${eventId}`)
 }
 
+export interface AddTicketInput {
+  firtsname: string
+  lastname: string
+  phone: string
+  len: number
+  price: number
+  eventId: string
+}
+
+export async function addTicket(input: AddTicketInput): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { error } = await supabase.from('tickets').insert({
+    firtsname: input.firtsname.trim(),
+    lastname: input.lastname.trim() || null,
+    phone: input.phone.trim(),
+    len: input.len,
+    price: input.price,
+    id_event: input.eventId,
+    status: 'paid',
+    pay: 'cash',
+  })
+  if (error) return { error: error.message }
+  revalidatePath(`/events/${input.eventId}`)
+  return {}
+}
+
 export type ScanResult =
   | { status: 'ok';      ticket: Ticket }
   | { status: 'already'; ticket: Ticket }
